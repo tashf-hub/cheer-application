@@ -34,7 +34,7 @@ const PostToServer = async (acc) => {
   
   const result = await response.json();
   console.log('===========result===========\n' + result.message);
-  CalList.push(result.message);
+  CalList.push(result);
 } 
 
 const meanCalorie = () => {
