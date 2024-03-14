@@ -25,9 +25,9 @@ export default function Home() {
     let accY;
     let accZ;
     const handleDeviceAcceleration = function(e){
-      accX = e.acceleration.x;
-      accY = e.acceleration.y;
-      accZ = e.acceleration.z;
+      accX = 2;//e.acceleration.x;
+      accY = 2;//e.acceleration.y;
+      accZ = 2;//e.acceleration.z;
     };
     const intervalId = setInterval(()=>{
       setX(accX); 

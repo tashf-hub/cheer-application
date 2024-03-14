@@ -13,6 +13,7 @@ const PostToServer = async (acc) => {
         });
     
     const result = await response.json();
+    console.log(result)
     console.log('===========result===========\n' + result.message);
 } 
 
