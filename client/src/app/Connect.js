@@ -3,7 +3,7 @@ import React from 'react'
 let totalCalorie = 0;
 
 const PostToServer = async (acc) => {
-    const response = await fetch("https://ad31-150-31-93-196.ngrok-free.app/api", {
+    const response = await fetch("https://acceleration-move-detect-demo.onrender.com", {
         method: "POST",
         mode: "cors",
         headers: {
