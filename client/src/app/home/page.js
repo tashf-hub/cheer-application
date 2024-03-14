@@ -23,7 +23,7 @@ import TweetButton from './TweetBottun';
 const CalList = [];
 
 const PostToServer = async (acc) => {
-  const response = await fetch("https://50e4-150-31-93-196.ngrok-free.app/api", {
+  const response = await fetch("https://acceleration-move-detect-demo.onrender.com", {
       method: "POST",
       mode: "cors",
       headers: {
