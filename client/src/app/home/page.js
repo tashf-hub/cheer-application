@@ -64,36 +64,54 @@ export default function Home(){
 
   const [isStart,setIsStart] = useState(false)
   useEffect(() => {
-    // 加速度センサーイベント処理
-    console.log("start_sensor");
-    let accX;
-    let accY;
-    let accZ;
-    const handleDeviceAcceleration = function(e){
-      accX = e.acceleration.x;
-      accY = e.acceleration.y;
-      accZ = e.acceleration.z;
+    // パーミッション要求の処理
+    const requestPermission = async () => {
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+          const permissionState = await DeviceMotionEvent.requestPermission();
+          if (permissionState === 'granted') {
+            startSensor();
+          } else {
+            console.error('DeviceMotion permission not granted');
+          }
+        } catch (error) {
+          console.error('DeviceMotion permission request failed', error);
+        }
+      } else {
+        // パーミッションAPIが必要ない場合（非iOS 13デバイス）
+        startSensor();
+      }
     };
-    const intervalId = setInterval(()=>{
-      setX(accX); 
-      setY(accY);
-      setZ(accZ);
-    },100);
 
-    window.addEventListener("devicemotion", handleDeviceAcceleration, false);
-    
-    // イベントリスナーをクリーンアップ
-    return () => {
-      window.removeEventListener("deviceorientation", handleDeviceAcceleration, false);
+    // 加速度センサーイベント処理の開始
+    const startSensor = () => {
+      console.log("start_sensor");
+      let accX, accY, accZ;
+      const handleDeviceAcceleration = (e) => {
+        accX = e.acceleration.x;
+        accY = e.acceleration.y;
+        accZ = e.acceleration.z;
+      };
+
+      window.addEventListener("devicemotion", handleDeviceAcceleration, false);
+
+      const intervalId = setInterval(() => {
+        setX(accX);
+        setY(accY);
+        setZ(accZ);
+        // ここでxyzlistとaccを更新するロジックを追加する
+      }, 1000); // 更新間隔を1秒に設定
+
+      // イベントリスナーとインターバルをクリーンアップ
+      return () => {
+        window.removeEventListener("devicemotion", handleDeviceAcceleration, false);
+        clearInterval(intervalId);
+      };
     };
+
+    // パーミッション要求を実行
+    requestPermission();
   }, []);
-
-  useEffect(() => {
-    console.log("accが更新されました")
-    console.log(acc)
-    PostToServer(acc);
-}
-,[acc])
 
   useEffect(()=>{
     if (!isStart){
