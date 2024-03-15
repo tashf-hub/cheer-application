@@ -64,54 +64,36 @@ export default function Home(){
 
   const [isStart,setIsStart] = useState(false)
   useEffect(() => {
-    // パーミッション要求の処理
-    const requestPermission = async () => {
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        try {
-          const permissionState = await DeviceMotionEvent.requestPermission();
-          if (permissionState === 'granted') {
-            startSensor();
-          } else {
-            console.error('DeviceMotion permission not granted');
-          }
-        } catch (error) {
-          console.error('DeviceMotion permission request failed', error);
-        }
-      } else {
-        // パーミッションAPIが必要ない場合（非iOS 13デバイス）
-        startSensor();
-      }
+    // 加速度センサーイベント処理
+    console.log("start_sensor");
+    let accX;
+    let accY;
+    let accZ;
+    const handleDeviceAcceleration = function(e){
+      accX = e.acceleration.x;
+      accY = e.acceleration.y;
+      accZ = e.acceleration.z;
     };
+    const intervalId = setInterval(()=>{
+      setX(accX); 
+      setY(accY);
+      setZ(accZ);
+    },100);
 
-    // 加速度センサーイベント処理の開始
-    const startSensor = () => {
-      console.log("start_sensor");
-      let accX, accY, accZ;
-      const handleDeviceAcceleration = (e) => {
-        accX = e.acceleration.x;
-        accY = e.acceleration.y;
-        accZ = e.acceleration.z;
-      };
-
-      window.addEventListener("devicemotion", handleDeviceAcceleration, false);
-
-      const intervalId = setInterval(() => {
-        setX(accX);
-        setY(accY);
-        setZ(accZ);
-        // ここでxyzlistとaccを更新するロジックを追加する
-      }, 1000); // 更新間隔を1秒に設定
-
-      // イベントリスナーとインターバルをクリーンアップ
-      return () => {
-        window.removeEventListener("devicemotion", handleDeviceAcceleration, false);
-        clearInterval(intervalId);
-      };
+    window.addEventListener("devicemotion", handleDeviceAcceleration, false);
+    
+    // イベントリスナーをクリーンアップ
+    return () => {
+      window.removeEventListener("deviceorientation", handleDeviceAcceleration, false);
     };
-
-    // パーミッション要求を実行
-    requestPermission();
   }, []);
+
+  useEffect(() => {
+    console.log("accが更新されました")
+    console.log(acc)
+    PostToServer(acc);
+}
+,[acc])
 
   useEffect(()=>{
     if (!isStart){
@@ -186,6 +168,10 @@ export default function Home(){
                 <ResultDialog mean={mean} type={ptype}/>
               </Box>
             
+            </Grid >
+            <Grid item xs={12}>
+              <SensorPermissionButton/>
+
             </Grid>
           </Grid>
 
@@ -341,3 +327,37 @@ function Fw (){return (<DialogContent>
   
 }
 
+
+
+const SensorPermissionButton = () => {
+  const [permissionGranted, setPermissionGranted] = useState(false);
+
+  const handlePermissionRequest = async () => {
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      // iOS 13+ デバイス
+      try {
+        const permissionResponse = await DeviceMotionEvent.requestPermission();
+        if (permissionResponse === 'granted') {
+          setPermissionGranted(true);
+          // 許可された後の処理をここに記述
+          alert('アクセス許可が与えられました！');
+        } else {
+          alert('アクセス許可が拒否されました。');
+        }
+      } catch (error) {
+        console.error('DeviceMotionEvent.requestPermission error:', error);
+      }
+    } else {
+      // 非iOS 13+ デバイス、もしくは許可不要の環境
+      setPermissionGranted(true);
+      // ここでも、許可された後の処理を記述できます
+      alert('このデバイスではアクセス許可の要求は不要です。');
+    }
+  };
+
+  return (
+    <button onClick={handlePermissionRequest} disabled={permissionGranted}>
+      {permissionGranted ? 'アクセス許可済み' : 'デバイスモーションのアクセス許可を求める'}
+    </button>
+  );
+};
